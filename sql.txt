@@ -1,0 +1,451 @@
+SQL nyelv alapjai
+
+SELECT ... FROM ... WHERE ...
+
+Egyszerű lekérdezések: 
+ 
+SELECT * FROM Customers;
+  SELECT CustomerName FROM Customers;
+  SELECT CustomerName, Address FROM Customers;
+
+  SELECT City FROM Customers;
+  SELECT DISTINCT City FROM Customers;
+
+  SELECT * FROM Customers WHERE Country = 'Mexico';
+  SELECT * FROM Customers WHERE CustomerID = 1;
+
+  -- Írhatjuk több sorba (Hosszabb lekérdezéseknél, így átláthatóbb):
+  SELECT * 
+  FROM Customers 
+  WHERE CustomerID = 1;
+  
+Lekérdezések operátorokkal:
+
+    SELECT * FROM Products WHERE Price = 18;
+    SELECT * FROM Products WHERE Price > 30;
+    SELECT * FROM Products WHERE Price >= 30;
+    SELECT * FROM Products WHERE Price <> 18;
+    SELECT * FROM Products WHERE Price BETWEEN 50 AND 60;
+    SELECT * FROM Customers WHERE City LIKE 's%';
+    SELECT * FROM Customers WHERE City IN ('Paris','London');
+ 
+-------------------------------------------------------------
+
+AND / OR / NOT és ORDER BY
+Lekérdezések AND, OR, NOT operátorokkal:
+
+
+  SELECT * FROM Customers
+  WHERE Country = 'Germany' AND City = 'Berlin';
+  
+  SELECT * FROM Customers
+  WHERE City = 'Berlin' OR City = 'Stuttgart';
+  
+  SELECT * FROM Customers
+  WHERE NOT Country = 'Germany';
+  
+  SELECT * FROM Customers
+  WHERE Country = 'Germany' AND (City = 'Berlin' OR City = 'Stuttgart');
+  
+
+Lekérdezések sorbarendezve:
+
+
+  SELECT * FROM Customers
+  ORDER BY Country;
+
+  SELECT * FROM Customers
+  ORDER BY Country DESC;
+
+  SELECT * FROM Customers
+  ORDER BY Country, CustomerName;
+
+  SELECT * FROM Customers
+  ORDER BY Country ASC, CustomerName DESC;
+-----------------------------------------------------------
+INSERT ... INTO és a NULL érték
+
+Adatok beszúrása:
+
+  INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+  VALUES ('WebDev', 'Péter Nagy', 'Fő u. 12.', 'Veszprém', '8200', 'Hungary');
+  
+  INSERT INTO Customers (CustomerName, City, Country)
+  VALUES ('WebDev', 'Veszprém', 'Hungary');
+ 
+NULL érték:
+
+    SELECT CustomerName, ContactName, Address
+    FROM Customers
+    WHERE Address IS NULL;
+    
+    
+    SELECT CustomerName, ContactName, Address
+    FROM Customers
+    WHERE Address IS NOT NULL;
+ 
+-----------------------------------------------------
+UPDATE és DELETE
+Adatok felülírása:
+
+  UPDATE Customers
+  SET ContactName = 'Alfred Schmidt', City = 'Frankfurt'
+  WHERE CustomerID = 1;
+  
+  
+  /* Ügyelj az adatok felülírásánál! 
+  Ha elhagyod a WHERE részt, minden rekord felülírásra kerül! */
+  UPDATE Customers
+  SET ContactName ='Juan';
+  
+ Adatsor (record) törlése:
+
+  DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
+
+  /* Ügyelj a record törlésekor! 
+  Ha elhagyod a WHERE részt, minden rekord törlődni fog a "Customers" táblából! 
+  Maga a tábla azonban üresen megmarad. */
+  DELETE FROM Customers;
+-----------------------------------------------------------------------------------
+phpMyAdmin használata
+  -- adatbázis létrehozása
+  CREATE DATABASE muhely;
+
+  -- adatbázis törlése
+  DROP DATABASE muhely;
+ 
+
+Adatbázis elérése parancssori ablakból:
+
+  mysql -u root -p
+  
+
+  -- adatbázisok listázása
+  SHOW DATABASES;
+
+  -- táblák listázása
+  SHOW TABLES;
+
+  -- tábla tulajdonságai
+  DESCRIBE customers;
+
+
+  CREATE, DROP és ALTER
+Adatbázis és tábla létrehozása
+
+  DROP DATABASE IF EXISTS muhely;
+  CREATE DATABASE muhely;
+  USE muhely;
+  
+  DROP TABLE IF EXISTS szgk;
+  
+  CREATE TABLE szgk(
+      id INT, 
+      tipus VARCHAR(20), 
+      modell VARCHAR(20), 
+      rendszam VARCHAR(15), 
+      ajtok_szama INT,
+      gyartas_eve DATE
+  );
+  
+  INSERT INTO szgk (id, tipus, modell, rendszam, ajtok_szama, gyartas_eve)
+  VALUES(10, 'Opel', 'Corsa C', 'AAA123', 4, '2002-10-03'); 
+  
+Adatbázis és tábla létrehozása megszorításokkal
+
+  DROP DATABASE IF EXISTS muhely;
+  CREATE DATABASE muhely;
+  USE muhely;
+  
+  DROP TABLE IF EXISTS szgk;
+  
+  CREATE TABLE szgk(
+      id INT PRIMARY KEY AUTO_INCREMENT, 
+      tipus VARCHAR(20) DEFAULT 'Toyota', 
+      modell VARCHAR(20) NOT NULL, 
+      rendszam VARCHAR(15) UNIQUE, 
+      ajtok_szama INT CHECK (ajtok_szama < 6),
+      gyartas_eve DATE
+  );
+  
+  INSERT INTO szgk (tipus, modell, rendszam, ajtok_szama, gyartas_eve)
+  VALUES('Opel', 'Corsa C', 'AAA123', 14, '2002-10-03'); 
+ ----------------------------------------------------------------------------
+
+SQL függvények: MIN, MAX, COUNT, SUM, AVG
+
+  USE northwind;
+  -- minimumérték meghatározása
+  SELECT MIN(list_price) AS Legolcsóbb FROM products;
+
+  -- maximumérték meghatározása
+  SELECT MAX(list_price) AS Legdrágább FROM products;
+
+  -- megszámlálás
+  SELECT COUNT(id) FROM products WHERE list_price = 1.2;
+
+  -- összegzés
+  SELECT SUM(list_price) FROM products WHERE id < 4;
+
+  -- átlagszámítás
+  SELECT AVG(list_price) FROM products WHERE id < 4;
+--------------------------------------------------------------
+
+  USE northwind;
+  -- minimumérték meghatározása
+  SELECT MIN(list_price) AS Legolcsóbb FROM products;
+
+  -- maximumérték meghatározása
+  SELECT MAX(list_price) AS Legdrágább FROM products;
+
+  -- megszámlálás
+  SELECT COUNT(id) FROM products WHERE list_price = 1.2;
+
+  -- összegzés
+  SELECT SUM(list_price) FROM products WHERE id < 4;
+
+  -- átlagszámítás
+  SELECT AVG(list_price) FROM products WHERE id < 4;
+  --------------------------------------------------------------
+  UNION, GROUP BY, HAVING
+
+UNION
+- mindegyik táblából azonos számú oszlopot kell megadnunk,
+- azonos sorrendben,
+- az egyesítendő oszlopoknak azonos adattípusúnak kell lennie,
+
+
+  SELECT City FROM Customers
+  UNION
+  SELECT City FROM Suppliers
+  ORDER BY City;
+  
+  SELECT City, Country FROM Customers
+  WHERE Country='Germany'
+  UNION ALL
+  SELECT City, Country FROM Suppliers
+  WHERE Country='Germany'
+  ORDER BY City;
+  
+
+  SELECT 'Customer' AS Type, ContactName, City, Country
+  FROM Customers
+  UNION
+  SELECT 'Supplier', ContactName, City, Country
+  FROM Suppliers;
+
+
+
+  GROUP BY
+
+  SELECT COUNT(CustomerID), Country
+  FROM Customers
+  GROUP BY Country
+  ORDER BY COUNT(CustomerID) DESC;
+  
+HAVING
+(szükséges, mivel a WHERE záradék esetén nem lehet összegző függvényeket használni)
+
+  SELECT COUNT(CustomerID), Country
+  FROM Customers
+  GROUP BY Country
+  HAVING COUNT(CustomerID) > 5
+  ORDER BY COUNT(CustomerID) DESC;
+  ------------------------------------------------------------
+Táblák összekapcsolása
+
+  DROP DATABASE IF EXISTS shop;
+  CREATE DATABASE shop;
+  USE shop;
+  
+  -- szülői tábla
+  CREATE TABLE customers (
+      customer_id INT,
+      name VARCHAR(40),
+      PRIMARY KEY (customer_id)
+  );
+  
+  -- gyermek tábla
+  CREATE TABLE orders (
+      order_id INT,
+      order_date DATE,
+      customer_id INT,
+      PRIMARY KEY (order_id),
+      CONSTRAINT FK_customer_order 
+      FOREIGN KEY (customer_id) REFERENCES customers (customer_id)
+  );
+  
+
+  -- adatfeltöltés
+  INSERT INTO customers (customer_id, name) VALUES (1, 'Kis Peter');
+  INSERT INTO customers (customer_id, name) VALUES (2, 'Nagy Anita');
+  INSERT INTO customers (customer_id, name) VALUES (77, 'Szego Pal');
+  INSERT INTO customers (customer_id, name) VALUES (101, 'Horvath Tamas');
+  INSERT INTO customers (customer_id, name) VALUES (102, 'Szabo Nora');
+  
+  INSERT INTO orders (order_id, order_date, customer_id) VALUES (1000, '2022-01-05', 1);
+  INSERT INTO orders (order_id, order_date, customer_id) VALUES (1001, '2022-01-07', 2);
+  INSERT INTO orders (order_id, order_date, customer_id) VALUES (1002, '2022-02-03', 77);
+  INSERT INTO orders (order_id, order_date, customer_id) VALUES (1003, '2022-01-09', 77);
+    
+  ---------------------------------------------------------------------------
+JOIN: Rekordok összekapcsolása
+
+Az adatbázis létrehozása
+
+  DROP DATABASE IF EXISTS club;
+  CREATE DATABASE club;
+  USE club;
+  
+  CREATE TABLE ujsagirok (
+      id INT AUTO_INCREMENT,
+      nev VARCHAR(20),
+      sportag VARCHAR(20),
+      PRIMARY KEY (id)
+  );
+
+  CREATE TABLE sportolok (
+      id INT AUTO_INCREMENT,
+      nev VARCHAR(20),
+      sportag VARCHAR(20),
+      PRIMARY KEY (id)
+  );
+
+  INSERT INTO ujsagirok (nev, sportag) VALUES ('Norbert', 'NBA');
+  INSERT INTO ujsagirok (nev, sportag) VALUES ('Flóra', 'Forma-1');
+  INSERT INTO ujsagirok (nev, sportag) VALUES ('Balázs', 'BMX');
+  INSERT INTO ujsagirok (nev, sportag) VALUES ('Gábor', 'Gokart');
+
+  INSERT INTO sportolok (nev, sportag) VALUES ('Bea', 'BMX');
+  INSERT INTO sportolok (nev, sportag) VALUES ('Nóra', 'NBA');
+  INSERT INTO sportolok (nev, sportag) VALUES ('Ferenc', 'Forma-1');
+  INSERT INTO sportolok (nev, sportag) VALUES ('Fata', 'Forma-1');
+  INSERT INTO sportolok (nev, sportag) VALUES ('Tibor', 'Triatlon');        
+
+
+  JOIN lekérdezések
+
+  USE club;
+
+  -- INNER JOIN
+  SELECT ujsagirok.nev, sportolok.nev, ujsagirok.sportag
+  FROM ujsagirok
+  INNER JOIN sportolok 
+  ON ujsagirok.sportag = sportolok.sportag;
+
+
+  -- LEFT JOIN
+  SELECT ujsagirok.nev, sportolok.nev, ujsagirok.sportag
+  FROM ujsagirok
+  LEFT JOIN sportolok 
+  ON ujsagirok.sportag = sportolok.sportag;
+
+
+  -- RIGHT JOIN
+  SELECT ujsagirok.nev, sportolok.nev, ujsagirok.sportag
+  FROM ujsagirok
+  RIGHT JOIN sportolok 
+  ON ujsagirok.sportag = sportolok.sportag;
+  
+CROSS JOIN
+
+    DROP DATABASE IF EXISTS sakk;
+    CREATE DATABASE sakk;
+    USE sakk;
+  
+    CREATE TABLE class_10 (
+        id INT AUTO_INCREMENT,
+        name VARCHAR(20),
+        PRIMARY KEY (id)
+    );
+  
+    CREATE TABLE class_11 (
+        id INT AUTO_INCREMENT,
+        name VARCHAR(20),
+        PRIMARY KEY (id)
+    );
+  
+    INSERT INTO class_10 (name) VALUES ('Horvath Peter');
+    INSERT INTO class_10 (name) VALUES ('Kis Zalan');
+    INSERT INTO class_10 (name) VALUES ('Nemeth Virag');
+    INSERT INTO class_10 (name) VALUES ('Szabo Nora');
+  
+    INSERT INTO class_11 (name) VALUES ('Mester Luca');
+    INSERT INTO class_11 (name) VALUES ('Fuchs reka');
+    INSERT INTO class_11 (name) VALUES ('Toth Adam');
+  
+  
+    -- CROSS JOIN
+    SELECT class_10.name, class_11.name
+    FROM class_10
+    CROSS JOIN class_11;
+  
+
+SELF JOIN
+
+    DROP DATABASE IF EXISTS sakk;
+    CREATE DATABASE sakk;
+    USE sakk;
+    
+    CREATE TABLE students (
+        id INT AUTO_INCREMENT,
+        name VARCHAR(20),
+        city VARCHAR(20),
+        PRIMARY KEY (id)
+    );
+    
+    INSERT INTO students (name, city) VALUES ('Horvath Peter', 'Szeged');
+    INSERT INTO students (name, city) VALUES ('Kis Zalan', 'Szeged');
+    INSERT INTO students (name, city) VALUES ('Nemeth Virag', 'Szeged');
+    INSERT INTO students (name, city) VALUES ('Szabo Nora', 'Szeged');
+    INSERT INTO students (name, city) VALUES ('Mester Luca', 'Pecs');
+    INSERT INTO students (name, city) VALUES ('Fuchs Reka', 'Pecs');
+    INSERT INTO students (name, city) VALUES ('Toth Adam', 'Pecs');
+    
+    -- SELF JOIN
+    SELECT A.name AS player_A, B.name AS player_B, A.city
+    FROM students A, students B
+    WHERE A.id <> B.id
+    AND A.city = B.city
+    ORDER BY A.city;  
+  -------------------------------------------------------------
+Tábláról táblára
+Queen nevű együttes dalai
+
+  SELECT dalok.cim, eloadok.nev
+  FROM dalok, eloadok
+  WHERE dalok.eloadoid = eloadok.eloadoid AND eloadok.nev = 'Queen';  
+  
+2010-ben első helyezett dal címe és előadója
+
+  SELECT lista.ev, dalok.cim, eloadok.nev
+  FROM lista, dalok, eloadok
+  WHERE lista.ev = '2010' AND lista.helyezes = 1
+      AND lista.dalid = dalok.dalid AND dalok.eloadoid = eloadok.eloadoid; 
+
+-------------------------------------------------------------
+Lekérdezés erdeményének mentése
+ 
+  Lekérdezés eredményének mentése egy külön oszlopba
+
+  -- oszlop létrehozása
+  ALTER TABLE eloadok
+  ADD dalok_szama INT;
+  
+  -- eredmény mentése egy új oszlopba
+  -- dalok száma előadónként
+  UPDATE eloadok
+  SET eloadok.dalok_szama = (SELECT COUNT(dalok.cim)
+      FROM dalok
+      WHERE dalok.eloadoid = eloadok.eloadoid
+      GROUP BY dalok.eloadoid);
+    
+  Lekérdezés eredményének mentése egy új táblába
+
+  -- dalok száma előadónként  
+  CREATE TABLE dalok_szama
+      SELECT COUNT(cim) AS dalok_szama, eloadok.nev AS eloado
+      FROM dalok, eloadok
+      WHERE dalok.eloadoid = eloadok.eloadoid
+      GROUP BY dalok.eloadoid; 
+  
